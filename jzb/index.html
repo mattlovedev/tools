@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="base64js.min.js"></script>
+<script src="pako_inflate.min.js"></script>
+</head>
+<body>
+
+Input:
+<input type="button" value="paste" onclick="pasteInput()">
+<input type="button" value="clear" onclick="clearInput()">
+<br>
+<textarea cols="150" rows="10" id="input" oninput="reverseJZB()"></textarea>
+<br><br>
+Output:<input type="button" value="copy" onclick="copyOutput()"><br>
+
+<textarea cols="150" rows="40" disabled="true" id="output"></textarea>
+
+<script>
+
+const inputDom = document.getElementById("input")
+const outputDom = document.getElementById("output")
+
+function pasteInput() {
+    navigator.clipboard.readText().then((clipText) => {
+        inputDom.value = clipText
+        reverseJZB()
+    })
+}
+
+function clearInput() {
+    inputDom.value = ""
+    outputDom.value = ""
+    inputDom.focus()
+}
+
+function copyOutput() {
+    outputDom.select();
+    outputDom.setSelectionRange(0, 99999); // For mobile devices
+    navigator.clipboard.writeText(outputDom.value);
+}
+
+function reverseJZB() {
+    const input = inputDom.value
+
+    if (input.length == 0) {
+        outputDom.value = ""
+        return
+    }
+
+    const unpadded = input.substr(0, input.length - (input.length % 4))
+
+    const decoded = base64js.toByteArray(unpadded)
+
+    const inflated = pako.inflate(decoded, { to: "string" })
+
+    outputDom.value = JSON.stringify(JSON.parse(inflated), null, 2)
+}
+
+</script>
+
+</body>
+</html>
