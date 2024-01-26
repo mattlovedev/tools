@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="base64js.min.js"></script>
+</head>
+<body>
+
+Input:<input type="button" value="paste" onclick="pasteInput()"><br>
+<textarea cols="150" rows="10" id="input" oninput="b64Decode()"></textarea>
+<br><br>
+Output:<input type="button" value="copy" onclick="copyOutput()"><br>
+
+<textarea cols="150" rows="40" disabled="true" id="output"></textarea>
+
+<script>
+
+const inputDom = document.getElementById("input")
+const outputDom = document.getElementById("output")
+
+function pasteInput() {
+    navigator.clipboard.readText().then((clipText) => {
+        inputDom.value = clipText
+        b64Decode()
+    })
+}
+
+function copyOutput() {
+    outputDom.select();
+    outputDom.setSelectionRange(0, 99999); // For mobile devices
+    navigator.clipboard.writeText(outputDom.value);
+}
+
+function b64Decode() {
+    const input = inputDom.value
+
+    if (input.length == 0) {
+        outputDom.value = ""
+        return
+    }
+
+    const unpadded = input.substr(0, input.length - (input.length % 4))
+
+    const decoded = base64js.toByteArray(unpadded)
+
+    const str = String.fromCharCode.apply(String, decoded)
+
+    outputDom.value = JSON.stringify(JSON.parse(str), null, 2)
+}
+
+</script>
+
+</body>
+</html>
