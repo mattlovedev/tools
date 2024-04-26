@@ -1,10 +1,35 @@
 <html>
     <head>
+        <title>Tools</title>
         <script src="pendo.js"></script>
+        <style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+}
+
+li a {
+  display: block;
+  color: #000;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+/* Change the link color on hover */
+li a:hover {
+  background-color: #555;
+  color: white;
+}
+        </style>
     </head>
     <body>
-        <a href="jzb">jzb</a><br/>
-        <a href="b64">b64</a><br/>
-        <a href="beautify">beautify</a>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="jzb">jzb decoder</a></li>
+            <li><a href="b64">b64 decoder</a></li>
+            <li><a href="minifier">minifier</a></li>
+        </ul>
     </body>
 </html>

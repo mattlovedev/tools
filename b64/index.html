@@ -1,50 +1,89 @@
 <html>
 <head>
+<title>Tools - B64 Decoder</title>
 <script src="base64js.min.js"></script>
 <script src="../pendo.js"></script>
+<style>
+/* Split the screen in half */
+.split {
+  height: 100%;
+  width: 50%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+/* Control the left side */
+.left {
+  left: 0;
+}
+
+/* Control the right side */
+.right {
+  right: 0;
+}
+
+/* If you want the content centered horizontally and vertically */
+.centered {
+  text-align: center;
+}
+
+textarea {
+    width: 90%;
+    height: 90%;
+}
+</style>
 </head>
 <body>
-
-Input:<input type="button" value="paste" onclick="pasteInput()"><br>
-<textarea cols="150" rows="10" id="input" oninput="b64Decode()"></textarea>
-<br><br>
-Output:<input type="button" value="copy" onclick="copyOutput()"><br>
-
-<textarea cols="150" rows="40" disabled="true" id="output"></textarea>
-
+<div class="split left">
+    <div class="centered">
+        <h2>Encoded B64</h2>
+        <textarea id="encoded" oninput="decodeB64()"></textarea>
+    </div>
+</div>
+<div class="split right">
+    <div class="centered">
+        <h2>Decoded B64</h2>
+        <textarea id="decoded" oninput="encodeB64()"></textarea>
+    </div>
+</div>
 <script>
 
-const inputDom = document.getElementById("input")
-const outputDom = document.getElementById("output")
+const encodedDom = document.getElementById("encoded")
+const decodedDom = document.getElementById("decoded")
 
-function pasteInput() {
-    navigator.clipboard.readText().then((clipText) => {
-        inputDom.value = clipText
-        b64Decode()
-    })
-}
+function decodeB64() {
+    const encoded = encodedDom.value
 
-function copyOutput() {
-    outputDom.select();
-    outputDom.setSelectionRange(0, 99999); // For mobile devices
-    navigator.clipboard.writeText(outputDom.value);
-}
-
-function b64Decode() {
-    const input = inputDom.value
-
-    if (input.length == 0) {
-        outputDom.value = ""
+    if (encoded.length == 0) {
+        decodedDom.value = ""
         return
     }
 
-    const unpadded = input.substr(0, input.length - (input.length % 4))
+    const unpadded = encoded.substr(0, encoded.length - (encoded.length % 4))
 
     const decoded = base64js.toByteArray(unpadded)
 
-    const str = String.fromCharCode.apply(String, decoded)
+    const utf8String = new TextDecoder().decode(decoded)
 
-    outputDom.value = JSON.stringify(JSON.parse(str), null, 2)
+    decodedDom.value = utf8String
+}
+
+function encodeB64() {
+    const decoded = decodedDom.value
+
+    if (decoded.length == 0) {
+        encodedDom.value = ""
+        return
+    }
+
+    const utf8String = new TextEncoder().encode(decoded)
+
+    const encoded = base64js.fromByteArray(utf8String)
+
+    encodedDom.value = encoded
 }
 
 </script>
