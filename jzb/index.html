@@ -66,9 +66,14 @@ function decodeJZB() {
         return
     }
 
-    const unpadded = encoded.substr(0, encoded.length - (encoded.length % 4))
+    var padded = encoded
+    while (padded.length % 4) {
+        padded = padded + "="
+    }
 
-    const b64Decoded = base64js.toByteArray(unpadded)
+    //const unpadded = encoded.substr(0, encoded.length - (encoded.length % 4))
+
+    const b64Decoded = base64js.toByteArray(padded)
 
     const inflated = pako.inflate(b64Decoded, { to: "string" })
 
@@ -94,7 +99,7 @@ function encodeJZB() {
 
     var padded = encoded.replaceAll('=', '').replaceAll('/', '_').replaceAll('+', '-')
 
-    while (padded.length % 4 != 0) {
+    while (padded.length % 4) {
         padded = padded + "="
     }
 

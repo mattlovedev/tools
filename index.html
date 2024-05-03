@@ -10,6 +10,8 @@ ul {
   padding: 0;
   width: 200px;
   background-color: #f1f1f1;
+  display: inline-block;
+  margin-top: 25px;
 }
 
 li a {
@@ -24,13 +26,20 @@ li a:hover {
   background-color: #555;
   color: white;
 }
+
+#content {
+  text-align: center;
+}
         </style>
     </head>
     <body>
+      <div id="content">
         <ul class="nav navbar-nav">
             <li class="active"><a href="jzb">jzb decoder</a></li>
             <li><a href="b64">b64 decoder</a></li>
             <li><a href="minifier">minifier</a></li>
+            <li><a href="jsondiffhist">json diff hist</a></li>
         </ul>
+      </div>
     </body>
 </html>

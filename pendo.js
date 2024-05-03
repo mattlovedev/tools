@@ -1,8 +1,19 @@
 const subEnv = {
     "perfserf:matty_lover:tools": { env: "pendo-perfserf", key: "84a39aad-d998-4f14-4da8-78238afe6b2d" },
     "dev:ob_mattlove": { env: "pendo-dev", key: "61cf1d45-c5e0-4b72-7812-5ed735e14cf7" },
-    "dap:ChrisTest": { env: "pendo-dap", key: "5f68b25c-3494-40bd-4d40-7b862882d1fc" }
-}["perfserf:matty_lover:tools"];
+}[
+    "perfserf:matty_lover:tools"
+    //"dev:cname_test"
+];
+
+/*const vis = {
+    visitor: {
+        id: "stagingVis001"
+    },
+    account: {
+        id: "stagingAcc001"
+    }
+};*/
 
 (function(apiKey){
     (function(p,e,n,d,o){var v,w,x,y,z;o=p[d]=p[d]||{};o._q=o._q||[];

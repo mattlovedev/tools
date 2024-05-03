@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tools - JsonDiffHist</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <script src="../pendo.js"></script>
+    <link rel="stylesheet" href="https://benjamine.github.io/jsondiffpatch/style.css" type="text/css" />
+    <link
+      rel="stylesheet"
+      href="https://esm.sh/jsondiffpatch@0.6.0/lib/formatters/styles/html.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://esm.sh/jsondiffpatch@0.6.0/lib/formatters/styles/annotated.css"
+      type="text/css"
+    />
+    <script type="module">
+        import * as jsondiffpatch from 'https://esm.sh/jsondiffpatch@0.6.0';
+        import * as annotatedFormatter from 'https://esm.sh/jsondiffpatch@0.6.0/formatters/annotated';
+        import * as htmlFormatter from 'https://esm.sh/jsondiffpatch@0.6.0/formatters/html';
+
+        function generateDelta(left, right) {
+          const delta = jsondiffpatch.diff(left, right);
+          // beautiful html diff
+          document.getElementById('visual').innerHTML = htmlFormatter.format(delta, left);
+          // self-explained json
+          document.getElementById('annotated').innerHTML = annotatedFormatter.format(delta, left);
+        }
+
+        var prev = null
+        window.generate = function(a, b) {
+            if (prev != null) {
+                document.getElementById('button'+prev).style.background = ""
+            }
+            generateDelta(json[json.length - a - 1], json[json.length - b - 1])
+            document.getElementById('button'+a).style.background = "yellow"
+            prev = a
+        }
+    </script>
+  </head>
+  <body>
+    <script>
+        function buildDiffer(json) {
+            document.getElementById('upload').style.display = 'none'
+
+            var buttons = ''
+
+            for (let i = 0; i < json.length - 1; i++) {
+                buttons += '<input type="button" value="' + (i + 1) + ' -> ' + (i + 2) + '" '
+                buttons += 'id="button' + i + '" '
+                buttons += 'onclick=generate('+ i + ',' + (i + 1) + ') />'
+            }
+
+            document.getElementById('buttons').innerHTML = buttons
+
+            window.json = json
+
+            generate(0, 1)
+
+            document.getElementById('differ').style.display = 'block'
+        }
+
+        function onUpload(file) {
+            var fr = new FileReader()
+            fr.onload = function(e) {
+                const result = JSON.parse(e.target.result)
+                buildDiffer(result)
+            }
+            fr.readAsText(file.files[0])
+        }
+    </script>
+    <div id="upload">
+        <input id="file" name="file" type="file" onchange="onUpload(this)" />
+    </div>
+    <div id="differ" style="display: none;">
+        <div id="buttons" style="position: fixed;"></div>
+        <hr/>
+        <div id="visual" style="margin-top: 30px;" ></div>
+        <hr />
+        <div id="annotated"></div>
+    </div>
+    <script type="module">
+        
+    </script>
+  </body>
+</html>
