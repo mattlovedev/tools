@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Tools - JsonDiffHist</title>
+    <title>Tools - Diff Hist</title>
     <link rel="icon" type="image/png" href="../favicon.png">
     <script src="../pendo.js"></script>
     <link rel="stylesheet" href="https://benjamine.github.io/jsondiffpatch/style.css" type="text/css" />
@@ -28,12 +28,18 @@
           document.getElementById('annotated').innerHTML = annotatedFormatter.format(delta, left);
         }
 
+        window.reversed = false
+
         var prev = null
         window.generate = function(a, b) {
             if (prev != null) {
                 document.getElementById('button'+prev).style.background = ""
             }
-            generateDelta(json[json.length - a - 1], json[json.length - b - 1])
+            if (window.reversed) {
+              generateDelta(json[json.length - a - 1], json[json.length - b - 1])
+            } else {
+              generateDelta(json[a], json[b])
+            }
             document.getElementById('button'+a).style.background = "yellow"
             prev = a
         }
@@ -42,7 +48,7 @@
   <body>
     <script>
         function buildDiffer(json) {
-            document.getElementById('upload').style.display = 'none'
+            document.getElementById('setup').style.display = 'none'
 
             var buttons = ''
 
@@ -69,19 +75,45 @@
             }
             fr.readAsText(file.files[0])
         }
+
+        function onPaste() {
+          buildDiffer(JSON.parse(document.getElementById('input').value))
+        }
+
+        function onReverse(e) {
+          window.reversed = e.checked
+          generate(0, 1)
+        }
+
+        function onBack() {
+          document.getElementById('file').value = ''
+          document.getElementById('input').value = ''
+          document.getElementById('differ').style.display = 'none'
+          document.getElementById('setup').style.display = 'block'
+        }
     </script>
-    <div id="upload">
+    <div id="setup">
+      <div style="text-align: center;">
+        <h3 style="display: inline;">Paste or</h3>
         <input id="file" name="file" type="file" onchange="onUpload(this)" />
+      </div>
+      <div style="height: 90%; width: 90%; text-align: center; position: fixed">
+        <textarea id="input" style="width: 80%; height: 90%; margin-top: 15px;" oninput="onPaste()"></textarea>
+      </div>
     </div>
+
     <div id="differ" style="display: none;">
-        <div id="buttons" style="position: fixed;"></div>
-        <hr/>
-        <div id="visual" style="margin-top: 30px;" ></div>
+      <div id="header" style="position: fixed; width: 100%; background-color: gray; top: 0; padding: 10px; left: 0;">
+        <div id="buttons"></div>
+        <div style="margin-top: 5px;">
+        <input type="checkbox" id="reverseCheckbox" name="reverseCheckbox" value="reverse" onclick="onReverse(this)" />
+        <label for="reverseCheckbox">Reverse Array</label>
+        <input type="button" value="back" style="margin-left: 15px;" onclick="onBack()" />
+        </div>
+      </div>
+        <div id="visual" style="padding-top: 75px"></div>
         <hr />
         <div id="annotated"></div>
     </div>
-    <script type="module">
-        
-    </script>
   </body>
 </html>

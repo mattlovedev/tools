@@ -99,11 +99,11 @@ function encodeJZB() {
 
     var padded = encoded.replaceAll('=', '').replaceAll('/', '_').replaceAll('+', '-')
 
-    while (padded.length % 4) {
+    /*while (padded.length % 4) {
         padded = padded + "="
-    }
+    }*/
 
-    encodedDom.value = padded
+    encodedDom.value = padded // decode can handle !%4
 }
 
 </script>

@@ -4,27 +4,35 @@
         <link rel="icon" type="image/png" href="favicon.png">
         <script src="pendo.js"></script>
         <style>
+body {
+}
+
 ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
-  width: 200px;
-  background-color: #f1f1f1;
+  width: 400px;
   display: inline-block;
   margin-top: 25px;
 }
 
 li a {
+  font-size: 30px;
   display: block;
   color: #000;
   padding: 8px 16px;
   text-decoration: none;
+  margin-top: 10px;
+  border: 3px solid black;
+  border-radius: 10px;
 }
 
 /* Change the link color on hover */
 li a:hover {
   background-color: #555;
   color: white;
+  border: 3px solid pink;
+  border-radius: 10px;
 }
 
 #content {
@@ -38,7 +46,8 @@ li a:hover {
             <li class="active"><a href="jzb">jzb decoder</a></li>
             <li><a href="b64">b64 decoder</a></li>
             <li><a href="minifier">minifier</a></li>
-            <li><a href="jsondiffhist">json diff hist</a></li>
+            <li><a href="diffhist">diff hist</a></li>
+            <li><a href="mapper">json mapper</a></li>
         </ul>
       </div>
     </body>

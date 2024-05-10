@@ -1,0 +1,172 @@
+<html>
+<head>
+<title>Tools - Mapper</title>
+<link rel="icon" type="image/png" href="../favicon.png">
+<script src="../pendo.js"></script>
+<style>
+    /* Split the screen in half */
+    .split {
+      height: 100%;
+      width: 50%;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      overflow-x: hidden;
+      padding-top: 20px;
+    }
+    
+    /* Control the left side */
+    .left {
+      left: 0;
+    }
+    
+    /* Control the right side */
+    .right {
+      right: 0;
+    }
+    
+    /* If you want the content centered horizontally and vertically */
+    .centered {
+      text-align: center;
+    }
+    
+    .left textarea {
+        width: 90%;
+        height: 90%;
+    }
+
+    textarea#input {
+        margin-top: 15px;
+    }
+
+    textarea#mapper {
+        width: 90%;
+        height: 25%;
+    }
+
+    textarea#output {
+        width: 90%;
+        height: 60%;
+    }
+
+    h3 {
+        display: inline;
+    }
+
+    #filterDiv {
+        margin-top: 15px;
+    }
+
+    #filter {
+        width: 80%;
+    }
+</style>
+</head>
+<body>
+
+    <div class="split left">
+        <div class="centered">
+            <h2>Input</h2>
+            <h3>Paste or </h3>
+            <input id="file" type="file" onchange="onUpload(this)" />
+            <br/>
+            <textarea id="input" oninput="generateOutput()"></textarea>
+        </div>
+    </div>
+    <div class="split right">
+        <div class="centered">
+            <h2>Mapping Func</h2>
+            <textarea id="mapper" oninput="generateOutput()"></textarea>
+            <div id="filterDiv">
+            <h3>Filter</h3>
+            <input id="filter" type="text" oninput="generateOutput()" />
+            </div>
+            <h2>Output</h2>
+            <textarea id="output"></textarea>
+        </div>
+    </div>
+    <script>
+    
+    const inputDom = document.getElementById("input")
+    const mapperDom = document.getElementById("mapper")
+    const outputDom = document.getElementById("output")
+    const filterDom = document.getElementById("filter")
+
+    function onUpload(file) {
+        var fr = new FileReader()
+        fr.onload = function(e) {
+            inputDom.value = e.target.result
+            generateOutput()
+        }
+        fr.readAsText(file.files[0])
+    }
+
+    function mappedInput() {
+        const input = inputDom.value
+        const inputObj = JSON.parse(input)
+        if (mapperDom.value.length == 0) {
+            return inputObj
+        }
+        eval("var fn = " + mapperDom.value)
+
+        if (Array.isArray(inputObj)) {
+            return inputObj.map(fn)
+        }
+        return fn(inputObj)
+    }
+
+    function nestedFilter(obj, filter) {
+        const keys = filter.split(".")
+        const subObj = obj[keys[0]]
+        if (subObj == undefined) {
+            return ["", {}, false]
+        }
+        if (Array.isArray(subObj)) {
+            return [keys[0], subObj.map(innerObj => ({
+                [keys[1]]: innerObj[keys[1]]
+            })), true]
+        }
+        return [keys[0], { [keys[1]]: subObj[keys[1]] }, true]
+    }
+
+    function filterObject(input, allFilters) {
+        const out = {}
+        for (var filter of allFilters) {
+            if (filter.includes(".")) {
+                const [key, subObj, found] = nestedFilter(input, filter)
+                if (found) {
+                    out[key] = subObj
+                }
+            } else {
+                out[filter] = input[filter]
+            }
+        }
+        return out
+    }
+
+    function filteredInput() {
+        const input = mappedInput()
+        if (filterDom.value.length == 0) {
+            return input
+        }
+        const allFilters = filterDom.value.split(", ")
+
+        if (Array.isArray(input)) {
+            return input.map(element => filterObject(element, allFilters))
+        } else {
+            return filterObject(input, allFilters)
+        }
+
+        /*const keys = Object.keys(input)
+        const filtered = keys.filter( key => allFilters.includes(key) )
+        return filtered.reduce( (res, key) => (res[key] = input[key], res), {} )*/
+    }
+
+    function generateOutput() {
+        outputDom.value = JSON.stringify(filteredInput(), null, 2)
+    }
+    
+    </script>
+
+</body>
+</html>
