@@ -49,14 +49,31 @@ textarea {
 <div class="split right">
     <div class="centered">
         <h2>Decoded JZB</h2>
+        <div>
+            <input type="checkbox" id="beautifyCheckbox" onclick="onBeautify(this)" checked />
+            <label for="beautifyCheckbox">Beautify</label>
+        </div>
         <textarea id="decoded" oninput="encodeJZB()"></textarea>
     </div>
 </div>
 
 <script>
 
+var beautified = true
+
 const encodedDom = document.getElementById("encoded")
 const decodedDom = document.getElementById("decoded")
+
+function onBeautify(e) {
+    beautified = e.checked
+    if (decodedDom.value.length > 0) {
+        if (beautified) {
+            decodedDom.value = JSON.stringify(JSON.parse(decodedDom.value), null, 2)
+        } else {
+            decodedDom.value = JSON.stringify(JSON.parse(decodedDom.value), null, 0)
+        }
+    }
+}
 
 function decodeJZB() {
     const encoded = encodedDom.value
@@ -77,9 +94,11 @@ function decodeJZB() {
 
     const inflated = pako.inflate(b64Decoded, { to: "string" })
 
-    const decoded = JSON.stringify(JSON.parse(inflated), null, 2)
-
-    decodedDom.value = decoded
+    if (beautified) {
+        decodedDom.value = JSON.stringify(JSON.parse(inflated), null, 2)
+    } else {
+        decodedDom.value = JSON.stringify(JSON.parse(inflated), null, 0)
+    }
 
 }
 

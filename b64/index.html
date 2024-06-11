@@ -47,13 +47,30 @@ textarea {
 <div class="split right">
     <div class="centered">
         <h2>Decoded B64</h2>
+        <div>
+            <input type="checkbox" id="beautifyCheckbox" onclick="onBeautify(this)" checked />
+            <label for="beautifyCheckbox">Beautify</label>
+        </div>
         <textarea id="decoded" oninput="encodeB64()"></textarea>
     </div>
 </div>
 <script>
 
+var beautified = true
+
 const encodedDom = document.getElementById("encoded")
 const decodedDom = document.getElementById("decoded")
+
+function onBeautify(e) {
+    beautified = e.checked
+    if (decodedDom.value.length > 0) {
+        if (beautified) {
+            decodedDom.value = JSON.stringify(JSON.parse(decodedDom.value), null, 2)
+        } else {
+            decodedDom.value = JSON.stringify(JSON.parse(decodedDom.value), null, 0)
+        }
+    }
+}
 
 function decodeB64() {
     const encoded = encodedDom.value
@@ -69,7 +86,11 @@ function decodeB64() {
 
     const utf8String = new TextDecoder().decode(decoded)
 
-    decodedDom.value = utf8String
+    if (beautified) {
+        decodedDom.value = JSON.stringify(JSON.parse(utf8String), null, 2)
+    } else {
+        decodedDom.value = utf8String
+    }
 }
 
 function encodeB64() {
