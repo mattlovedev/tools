@@ -20,12 +20,22 @@
         import * as annotatedFormatter from 'https://esm.sh/jsondiffpatch@0.6.0/formatters/annotated';
         import * as htmlFormatter from 'https://esm.sh/jsondiffpatch@0.6.0/formatters/html';
 
+        window.hideUnchanged = false
+
         function generateDelta(left, right) {
           const delta = jsondiffpatch.diff(left, right);
           // beautiful html diff
-          document.getElementById('visual').innerHTML = htmlFormatter.format(delta, left);
+          if (window.hideUnchanged) {
+            document.getElementById('visual').innerHTML = htmlFormatter.format(delta);
+          } else {
+            document.getElementById('visual').innerHTML = htmlFormatter.format(delta, left);
+          }
           // self-explained json
-          document.getElementById('annotated').innerHTML = annotatedFormatter.format(delta, left);
+          if (window.hideUnchanged) {
+            document.getElementById('annotated').innerHTML = annotatedFormatter.format(delta);
+          } else {
+            document.getElementById('annotated').innerHTML = annotatedFormatter.format(delta, left);
+          }
         }
 
         window.reversed = false
@@ -43,6 +53,116 @@
             document.getElementById('button'+a).style.background = "yellow"
             prev = a
         }
+
+        const valContainsField = (val, field) => {
+          if (typeof val === "object" && val[field]) {
+            return true
+          }
+          if (Array.isArray(val)) {
+            for (let i = 0; i < val.length; i++) {
+              if (valContainsField(val[i], field)) {
+                return true
+              }
+            }
+          } else if (typeof val === "object") {
+            for (let [i, j] of Object.entries(val)) {
+              if (valContainsField(j, field)) {
+                return true
+              }
+            }
+          }
+          return false
+          //return !!val[field]
+        }
+
+        window.onFilter = function() {
+          const filter = document.getElementById('filter').value
+
+          if (filter === "") {
+            for (let i = 0; i < window.json.length - 1; i++) {
+              document.getElementById('button' + i).disabled = false;
+            }
+            return
+          }
+
+          for (let i = 0; i < window.json.length - 1; i++) {
+            if (window.reversed) {
+              const delta = jsondiffpatch.diff(window.json[window.json.length - i - 2], window.json[window.json.length - i - 1])
+              //document.getElementById('button' + i).disabled = !delta[filter];
+              document.getElementById('button' + i).disabled = !valContainsField(delta, filter);
+            } else {
+              const delta = jsondiffpatch.diff(window.json[i], window.json[i+1])
+              //document.getElementById('button' + i).disabled = !delta[filter];
+              document.getElementById('button' + i).disabled = !valContainsField(delta, filter);
+            }
+          }
+
+        }
+
+        window.clearFilter = function() {
+          document.getElementById('filter').value = ""
+          onFilter()
+        }
+
+        const isDateField = (field, val) => {
+          const lowerField = field.toLowerCase()
+          const fieldContains = [ 'last', 'current', 'created' ]
+          if (typeof val === 'string') {
+            const date = new Date(val)
+            return !isNaN(date.getTime())
+          }
+          if (typeof val !== 'number') {
+            return false
+          }
+          if (!val && (val < 1 || val > 253402300799)) { // keep 0 showing unset instead of 1970
+            return false
+          }
+          for (let i = 0; i < fieldContains.length ; i++) {
+            if (lowerField.includes(fieldContains[i])) {
+              return true
+            }
+          }
+          return false
+        }
+
+        const recurObj = (obj, toDate) => {
+          for (let [key, val] of Object.entries(obj)) {
+            if (key === "dates") {
+            } else if (Array.isArray(val)) {
+              obj[key] = recurArr(val, toDate)
+            } else if (typeof val === "object") {
+              obj[key] = recurObj(val, toDate)
+            } else if (isDateField(key, val)) {
+              if (toDate) {
+                obj[key] = new Date(val).toISOString()
+              } else {
+                obj[key] = new Date(val).getTime()
+              }
+            }
+          }
+          return obj
+        }
+
+        const recurArr = (arr, toDate) => {
+          for (let i = 0; i < arr.length; i++) {
+              if (Array.isArray(arr[i])) {
+                arr[i] = recurArr(arr[i], toDate)
+              } else if (typeof arr[i] === "object") {
+                arr[i] = recurObj(arr[i], toDate)
+              //} else if (isDateField(key, val)) { // no way to tell if array of timestamps if basing on fieldname
+                //obj[key] = new Date(val)
+              }
+          }
+          return arr
+        }
+
+        window.onConvertTimestamps = function(e) {
+          for (let i = 0; i < window.json.length; i++) {
+            window.json[i] = recurObj(window.json[i], e.checked)
+          }
+          generate(0, 1)
+        }
+
     </script>
   </head>
   <body>
@@ -85,6 +205,11 @@
           generate(0, 1)
         }
 
+        function onHideUnchanged(e) {
+          window.hideUnchanged = e.checked
+          generate(0, 1)
+        }
+
         function onBack() {
           document.getElementById('file').value = ''
           document.getElementById('input').value = ''
@@ -103,17 +228,25 @@
     </div>
 
     <div id="differ" style="display: none;">
-      <div id="header" style="position: fixed; width: 100%; background-color: gray; top: 0; padding: 10px; left: 0;">
+      <div id="header" style="width: 100%; background-color: gray; top: 0; padding: 10px; left: 0;">
         <div id="buttons"></div>
         <div style="margin-top: 5px;">
         <input type="checkbox" id="reverseCheckbox" name="reverseCheckbox" value="reverse" onclick="onReverse(this)" />
-        <label for="reverseCheckbox">Reverse Array</label>
+        <label for="reverseCheckbox">reverse array</label>
+        <!--<label for="filter" style="margin-left: 15px;">Filter:</label>-->
+        <input type="text" name="diffhistfilter" id="filter" value="" style="margin-left: 15px;" />
+        <input type="button" value="filter" onclick="onFilter()" />
+        <input type="button" value="clear" onclick="clearFilter()" />
+        <label for="hideUnchanged" style="margin-left: 15px;">hide unchanged</label>
+        <input type="checkbox" id="hideUnchanged" name="hideUnchanged" onclick="onHideUnchanged(this)" />
+          <label for="convertTimestamps" style="margin-left: 15px;">convert timestamps</label>
+          <input type="checkbox" id="convertTimestamps" name="convertTimestamps" onclick="onConvertTimestamps(this)" />
         <input type="button" value="back" style="margin-left: 15px;" onclick="onBack()" />
-        </div>
       </div>
-        <div id="visual" style="padding-top: 75px"></div>
-        <hr />
-        <div id="annotated"></div>
+    </div>
+    <div id="visual" style="padding-top: 15px"></div>
+      <hr />
+      <div id="annotated"></div>
     </div>
   </body>
 </html>

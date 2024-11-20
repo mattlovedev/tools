@@ -397,6 +397,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+.DS_Store
+
 l10n
 xldiff
 guidestorage
