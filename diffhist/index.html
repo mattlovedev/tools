@@ -132,7 +132,7 @@
             if (key === "dates") {
             } else if (Array.isArray(val)) {
               obj[key] = recurArr(val, toDate)
-            } else if (typeof val === "object") {
+            } else if (val !== null && typeof val === "object") {
               obj[key] = recurObj(val, toDate)
             } else if (isDateField(key, val)) {
               if (toDate) {
@@ -149,7 +149,7 @@
           for (let i = 0; i < arr.length; i++) {
               if (Array.isArray(arr[i])) {
                 arr[i] = recurArr(arr[i], toDate)
-              } else if (typeof arr[i] === "object") {
+              } else if (arr[i] !== null && typeof arr[i] === "object") {
                 arr[i] = recurObj(arr[i], toDate)
               //} else if (isDateField(key, val)) { // no way to tell if array of timestamps if basing on fieldname
                 //obj[key] = new Date(val)
