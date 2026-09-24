@@ -114,44 +114,57 @@
         return fn(inputObj)
     }
 
-    function nestedFilter(obj, filter) {
-        const keys = filter.split(".")
-        const subObj = obj[keys[0]]
-        if (subObj == undefined) {
-            return ["", {}, false]
-        }
-        if (Array.isArray(subObj)) {
-            return [keys[0], subObj.map(innerObj => ({
-                [keys[1]]: innerObj[keys[1]]
-            })), true]
-        }
-        return [keys[0], { [keys[1]]: subObj[keys[1]] }, true]
+    function isObject(val) {
+        return val !== null && typeof val === "object" && !Array.isArray(val)
     }
 
-    // combine results from multiple nested filters on the same key, e.g. "user.name, user.id"
-    function mergeFiltered(existing, subObj) {
+    // pick a dotted path like "a.b.c" out of val, mapping over any arrays along the way.
+    // returns [found, picked]
+    function pickPath(val, keys) {
+        if (keys.length == 0) {
+            return [true, val]
+        }
+        if (Array.isArray(val)) {
+            // keep indices aligned so later filters can merge element by element
+            return [true, val.map(innerVal => {
+                const [found, picked] = pickPath(innerVal, keys)
+                return found ? picked : {}
+            })]
+        }
+        if (!isObject(val) || val[keys[0]] === undefined) {
+            return [false, undefined]
+        }
+        const [found, picked] = pickPath(val[keys[0]], keys.slice(1))
+        return found ? [true, { [keys[0]]: picked }] : [false, undefined]
+    }
+
+    // combine results from multiple filters on the same key, e.g. "user.name, user.id"
+    function mergeFiltered(existing, picked) {
         if (existing === undefined) {
-            return subObj
+            return picked
         }
-        if (Array.isArray(existing) && Array.isArray(subObj)) {
-            return existing.map((innerObj, i) => ({ ...innerObj, ...subObj[i] }))
+        if (Array.isArray(existing) && Array.isArray(picked)) {
+            return existing.map((innerObj, i) => mergeFiltered(innerObj, picked[i]))
         }
-        return { ...existing, ...subObj }
+        if (isObject(existing) && isObject(picked)) {
+            const out = { ...existing }
+            for (const key of Object.keys(picked)) {
+                out[key] = mergeFiltered(existing[key], picked[key])
+            }
+            return out
+        }
+        return picked
     }
 
     function filterObject(input, allFilters) {
-        const out = {}
-        for (var filter of allFilters) {
-            if (filter.includes(".")) {
-                const [key, subObj, found] = nestedFilter(input, filter)
-                if (found) {
-                    out[key] = mergeFiltered(out[key], subObj)
-                }
-            } else {
-                out[filter] = input[filter]
+        let out = undefined
+        for (const filter of allFilters) {
+            const [found, picked] = pickPath(input, filter.split("."))
+            if (found) {
+                out = mergeFiltered(out, picked)
             }
         }
-        return out
+        return out === undefined ? {} : out
     }
 
     function filteredInput() {
@@ -159,7 +172,7 @@
         if (filterDom.value.length == 0) {
             return input
         }
-        const allFilters = filterDom.value.split(", ")
+        const allFilters = filterDom.value.split(",").map(filter => filter.trim()).filter(filter => filter.length > 0)
 
         if (Array.isArray(input)) {
             return input.map(element => filterObject(element, allFilters))
