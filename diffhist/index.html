@@ -60,6 +60,25 @@
             window.hideUnchanged = false
         }
 
+        // show the first comparison the filter hasn't disabled
+        window.showFirstEnabled = function() {
+            for (let i = 0; i < window.json.length - 1; i++) {
+                if (!document.getElementById('button' + i).disabled) {
+                    generate(i, i + 1)
+                    return
+                }
+            }
+        }
+
+        // re-render the current comparison, falling back if the filter disabled it
+        window.refresh = function() {
+            if (prev != null && !document.getElementById('button' + prev).disabled) {
+                generate(prev, prev + 1)
+            } else {
+                showFirstEnabled()
+            }
+        }
+
         const valContainsField = (val, field) => {
           if (val === null || typeof val !== "object") {
             return false
@@ -170,7 +189,7 @@
               window.json[i] = recurObj(window.json[i])
             }
           }
-          generate(0, 1)
+          refresh()
         }
 
     </script>
@@ -213,12 +232,13 @@
 
         function onReverse(e) {
           window.reversed = e.checked
-          generate(0, 1)
+          onFilter() // button i is a different pair once reversed
+          showFirstEnabled()
         }
 
         function onHideUnchanged(e) {
           window.hideUnchanged = e.checked
-          generate(0, 1)
+          refresh()
         }
 
         function onBack() {
