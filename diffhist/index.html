@@ -1,9 +1,28 @@
 <!doctype html>
 <html>
   <head>
+    <meta charset="utf-8">
     <title>Tools - Diff Hist</title>
     <link rel="icon" type="image/png" href="../favicon.png">
-    <link rel="stylesheet" href="https://benjamine.github.io/jsondiffpatch/style.css" type="text/css" />
+    <style>
+      /* the few rules this page used from the jsondiffpatch demo site's style.css */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, segoe ui, Roboto, Ubuntu, Arial, sans-serif, apple color emoji;
+        min-width: 600px;
+        color-scheme: only light;
+        background-color: #f8f8ff;
+        color: black;
+      }
+
+      pre {
+        background-color: transparent;
+        color: inherit;
+        font-family: monospace;
+        white-space: pre-wrap;
+        word-wrap: normal;
+        overflow: visible;
+      }
+    </style>
     <link
       rel="stylesheet"
       href="https://esm.sh/jsondiffpatch@0.6.0/lib/formatters/styles/html.css"
@@ -100,7 +119,6 @@
             }
           }
           return false
-          //return !!val[field]
         }
 
         window.onFilter = function() {
@@ -116,11 +134,9 @@
           for (let i = 0; i < window.json.length - 1; i++) {
             if (window.reversed) {
               const delta = jsondiffpatch.diff(window.json[window.json.length - i - 2], window.json[window.json.length - i - 1])
-              //document.getElementById('button' + i).disabled = !delta[filter];
               document.getElementById('button' + i).disabled = !valContainsField(delta, filter);
             } else {
               const delta = jsondiffpatch.diff(window.json[i], window.json[i+1])
-              //document.getElementById('button' + i).disabled = !delta[filter];
               document.getElementById('button' + i).disabled = !valContainsField(delta, filter);
             }
           }
@@ -174,8 +190,6 @@
                 arr[i] = recurArr(arr[i])
               } else if (arr[i] !== null && typeof arr[i] === "object") {
                 arr[i] = recurObj(arr[i])
-              //} else if (isDateField(key, val)) { // no way to tell if array of timestamps if basing on fieldname
-                //obj[key] = new Date(val)
               }
           }
           return arr
@@ -288,7 +302,6 @@
         <div style="margin-top: 5px;">
         <input type="checkbox" id="reverseCheckbox" name="reverseCheckbox" value="reverse" onclick="onReverse(this)" />
         <label for="reverseCheckbox">reverse array</label>
-        <!--<label for="filter" style="margin-left: 15px;">Filter:</label>-->
         <input type="text" name="diffhistfilter" id="filter" value="" style="margin-left: 15px;" />
         <input type="button" value="filter" onclick="onFilter()" />
         <input type="button" value="clear" onclick="clearFilter()" />

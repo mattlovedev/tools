@@ -1,41 +1,12 @@
+<!doctype html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Tools - JZB Decoder</title>
 <link rel="icon" type="image/png" href="../favicon.png">
-<script src="base64js.min.js"></script>
+<link rel="stylesheet" href="../split.css">
+<script src="../base64js.min.js"></script>
 <script src="pako.min.js"></script>
-<style>
-/* Split the screen in half */
-.split {
-  height: 100%;
-  width: 50%;
-  position: fixed;
-  z-index: 1;
-  top: 0;
-  overflow-x: hidden;
-  padding-top: 20px;
-}
-
-/* Control the left side */
-.left {
-  left: 0;
-}
-
-/* Control the right side */
-.right {
-  right: 0;
-}
-
-/* If you want the content centered horizontally and vertically */
-.centered {
-  text-align: center;
-}
-
-textarea {
-    width: 90%;
-    height: 90%;
-}
-</style>
 </head>
 <body>
 
@@ -87,8 +58,6 @@ function decodeJZB() {
         padded = padded + "="
     }
 
-    //const unpadded = encoded.substr(0, encoded.length - (encoded.length % 4))
-
     const b64Decoded = base64js.toByteArray(padded)
 
     const inflated = pako.inflate(b64Decoded, { to: "string" })
@@ -116,10 +85,6 @@ function encodeJZB() {
     const encoded = base64js.fromByteArray(deflated)
 
     var padded = encoded.replaceAll('=', '').replaceAll('/', '_').replaceAll('+', '-')
-
-    /*while (padded.length % 4) {
-        padded = padded + "="
-    }*/
 
     encodedDom.value = padded // decode can handle !%4
 }

@@ -1,0 +1,32 @@
+/* Split the screen in half */
+.split {
+  height: 100%;
+  width: 50%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+  box-sizing: border-box;
+}
+
+/* Control the left side */
+.left {
+  left: 0;
+}
+
+/* Control the right side */
+.right {
+  right: 0;
+}
+
+/* Center content horizontally; full height so textarea percentages resolve */
+.centered {
+  text-align: center;
+  height: 100%;
+}
+
+textarea {
+  width: 90%;
+  height: 90%;
+}

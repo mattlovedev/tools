@@ -1,39 +1,11 @@
+<!doctype html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Tools - Mapper</title>
 <link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../split.css">
 <style>
-    /* Split the screen in half */
-    .split {
-      height: 100%;
-      width: 50%;
-      position: fixed;
-      z-index: 1;
-      top: 0;
-      overflow-x: hidden;
-      padding-top: 20px;
-    }
-    
-    /* Control the left side */
-    .left {
-      left: 0;
-    }
-    
-    /* Control the right side */
-    .right {
-      right: 0;
-    }
-    
-    /* If you want the content centered horizontally and vertically */
-    .centered {
-      text-align: center;
-    }
-    
-    .left textarea {
-        width: 90%;
-        height: 90%;
-    }
-
     textarea#input {
         margin-top: 15px;
     }
@@ -179,10 +151,6 @@
         } else {
             return filterObject(input, allFilters)
         }
-
-        /*const keys = Object.keys(input)
-        const filtered = keys.filter( key => allFilters.includes(key) )
-        return filtered.reduce( (res, key) => (res[key] = input[key], res), {} )*/
     }
 
     function generateOutput() {
