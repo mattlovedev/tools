@@ -217,17 +217,34 @@
             document.getElementById('differ').style.display = 'block'
         }
 
+        // only build once the text is a JSON array with at least two entries to compare
+        function tryBuildDiffer(text) {
+          const errorDom = document.getElementById('setupError')
+          let json
+          try {
+            json = JSON.parse(text)
+          } catch (e) {
+            errorDom.textContent = text.trim() === '' ? '' : 'Invalid JSON: ' + e.message
+            return
+          }
+          if (!Array.isArray(json) || json.length < 2) {
+            errorDom.textContent = 'Expected a JSON array with at least 2 entries'
+            return
+          }
+          errorDom.textContent = ''
+          buildDiffer(json)
+        }
+
         function onUpload(file) {
             var fr = new FileReader()
             fr.onload = function(e) {
-                const result = JSON.parse(e.target.result)
-                buildDiffer(result)
+                tryBuildDiffer(e.target.result)
             }
             fr.readAsText(file.files[0])
         }
 
         function onPaste() {
-          buildDiffer(JSON.parse(document.getElementById('input').value))
+          tryBuildDiffer(document.getElementById('input').value)
         }
 
         function onReverse(e) {
@@ -244,6 +261,7 @@
         function onBack() {
           document.getElementById('file').value = ''
           document.getElementById('input').value = ''
+          document.getElementById('setupError').textContent = ''
           document.getElementById('filter').value = ''
           document.getElementById('reverseCheckbox').checked = false
           document.getElementById('hideUnchanged').checked = false
@@ -257,6 +275,7 @@
       <div style="text-align: center;">
         <h3 style="display: inline;">Paste or</h3>
         <input id="file" name="file" type="file" onchange="onUpload(this)" />
+        <div id="setupError" style="color: red; margin-top: 5px;"></div>
       </div>
       <div style="height: 90%; width: 90%; text-align: center; position: fixed">
         <textarea id="input" style="width: 80%; height: 90%; margin-top: 15px;" oninput="onPaste()"></textarea>
