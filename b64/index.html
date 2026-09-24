@@ -79,9 +79,12 @@ function decodeB64() {
         return
     }
 
-    const unpadded = encoded.substr(0, encoded.length - (encoded.length % 4))
+    var padded = encoded
+    while (padded.length % 4) {
+        padded = padded + "="
+    }
 
-    const decoded = base64js.toByteArray(unpadded)
+    const decoded = base64js.toByteArray(padded)
 
     const utf8String = new TextDecoder().decode(decoded)
 
