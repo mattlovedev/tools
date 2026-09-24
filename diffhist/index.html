@@ -54,7 +54,10 @@
         }
 
         const valContainsField = (val, field) => {
-          if (typeof val === "object" && val[field]) {
+          if (val === null || typeof val !== "object") {
+            return false
+          }
+          if (val[field]) {
             return true
           }
           if (Array.isArray(val)) {
