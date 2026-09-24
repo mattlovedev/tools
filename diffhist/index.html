@@ -106,51 +106,48 @@
           onFilter()
         }
 
-        const isDateField = (field, val) => {
+        const MIN_SECONDS = 1e9 // 2001-09-09, excludes small counters in matching fields
+        const MIN_MILLIS = 1e11 // anything smaller is assumed to be seconds
+        const MAX_MILLIS = 253402300799999 // 9999-12-31
+
+        // returns epoch millis if val looks like a timestamp, otherwise null
+        const toTimestampMillis = (field, val) => {
           const lowerField = field.toLowerCase()
           const fieldContains = [ 'last', 'current', 'created' ]
-          if (typeof val === 'string') {
-            const date = new Date(val)
-            return !isNaN(date.getTime())
-          }
-          if (typeof val !== 'number') {
-            return false
-          }
-          if (!val && (val < 1 || val > 253402300799)) { // keep 0 showing unset instead of 1970
-            return false
+          if (typeof val !== 'number' || val < MIN_SECONDS || val > MAX_MILLIS) { // keep 0 showing unset instead of 1970
+            return null
           }
           for (let i = 0; i < fieldContains.length ; i++) {
             if (lowerField.includes(fieldContains[i])) {
-              return true
+              return val < MIN_MILLIS ? val * 1000 : val
             }
           }
-          return false
+          return null
         }
 
-        const recurObj = (obj, toDate) => {
+        const recurObj = (obj) => {
           for (let [key, val] of Object.entries(obj)) {
             if (key === "dates") {
             } else if (Array.isArray(val)) {
-              obj[key] = recurArr(val, toDate)
+              obj[key] = recurArr(val)
             } else if (val !== null && typeof val === "object") {
-              obj[key] = recurObj(val, toDate)
-            } else if (isDateField(key, val)) {
-              if (toDate) {
-                obj[key] = new Date(val).toISOString()
-              } else {
-                obj[key] = new Date(val).getTime()
+              obj[key] = recurObj(val)
+            } else {
+              const millis = toTimestampMillis(key, val)
+              if (millis !== null) {
+                obj[key] = new Date(millis).toISOString()
               }
             }
           }
           return obj
         }
 
-        const recurArr = (arr, toDate) => {
+        const recurArr = (arr) => {
           for (let i = 0; i < arr.length; i++) {
               if (Array.isArray(arr[i])) {
-                arr[i] = recurArr(arr[i], toDate)
+                arr[i] = recurArr(arr[i])
               } else if (arr[i] !== null && typeof arr[i] === "object") {
-                arr[i] = recurObj(arr[i], toDate)
+                arr[i] = recurObj(arr[i])
               //} else if (isDateField(key, val)) { // no way to tell if array of timestamps if basing on fieldname
                 //obj[key] = new Date(val)
               }
@@ -158,9 +155,13 @@
           return arr
         }
 
+        // convert from a fresh copy of the original each time so unchecking restores it exactly
         window.onConvertTimestamps = function(e) {
-          for (let i = 0; i < window.json.length; i++) {
-            window.json[i] = recurObj(window.json[i], e.checked)
+          window.json = structuredClone(window.originalJson)
+          if (e.checked) {
+            for (let i = 0; i < window.json.length; i++) {
+              window.json[i] = recurObj(window.json[i])
+            }
           }
           generate(0, 1)
         }
@@ -182,7 +183,8 @@
 
             document.getElementById('buttons').innerHTML = buttons
 
-            window.json = json
+            window.originalJson = json
+            window.json = structuredClone(json)
 
             generate(0, 1)
 
