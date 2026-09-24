@@ -60,14 +60,19 @@ var beautified = true
 const encodedDom = document.getElementById("encoded")
 const decodedDom = document.getElementById("decoded")
 
+// reformat text as JSON, or return it unchanged if it isn't JSON
+function formatIfJson(text, indent) {
+    try {
+        return JSON.stringify(JSON.parse(text), null, indent)
+    } catch (e) {
+        return text
+    }
+}
+
 function onBeautify(e) {
     beautified = e.checked
     if (decodedDom.value.length > 0) {
-        if (beautified) {
-            decodedDom.value = JSON.stringify(JSON.parse(decodedDom.value), null, 2)
-        } else {
-            decodedDom.value = JSON.stringify(JSON.parse(decodedDom.value), null, 0)
-        }
+        decodedDom.value = formatIfJson(decodedDom.value, beautified ? 2 : 0)
     }
 }
 
@@ -89,7 +94,7 @@ function decodeB64() {
     const utf8String = new TextDecoder().decode(decoded)
 
     if (beautified) {
-        decodedDom.value = JSON.stringify(JSON.parse(utf8String), null, 2)
+        decodedDom.value = formatIfJson(utf8String, 2)
     } else {
         decodedDom.value = utf8String
     }
