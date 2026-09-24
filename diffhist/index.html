@@ -53,6 +53,13 @@
             prev = a
         }
 
+        // clear all differ state so the next file starts fresh
+        window.resetDiffer = function() {
+            prev = null
+            window.reversed = false
+            window.hideUnchanged = false
+        }
+
         const valContainsField = (val, field) => {
           if (val === null || typeof val !== "object") {
             return false
@@ -217,6 +224,11 @@
         function onBack() {
           document.getElementById('file').value = ''
           document.getElementById('input').value = ''
+          document.getElementById('filter').value = ''
+          document.getElementById('reverseCheckbox').checked = false
+          document.getElementById('hideUnchanged').checked = false
+          document.getElementById('convertTimestamps').checked = false
+          resetDiffer()
           document.getElementById('differ').style.display = 'none'
           document.getElementById('setup').style.display = 'block'
         }
