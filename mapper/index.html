@@ -128,13 +128,24 @@
         return [keys[0], { [keys[1]]: subObj[keys[1]] }, true]
     }
 
+    // combine results from multiple nested filters on the same key, e.g. "user.name, user.id"
+    function mergeFiltered(existing, subObj) {
+        if (existing === undefined) {
+            return subObj
+        }
+        if (Array.isArray(existing) && Array.isArray(subObj)) {
+            return existing.map((innerObj, i) => ({ ...innerObj, ...subObj[i] }))
+        }
+        return { ...existing, ...subObj }
+    }
+
     function filterObject(input, allFilters) {
         const out = {}
         for (var filter of allFilters) {
             if (filter.includes(".")) {
                 const [key, subObj, found] = nestedFilter(input, filter)
                 if (found) {
-                    out[key] = subObj
+                    out[key] = mergeFiltered(out[key], subObj)
                 }
             } else {
                 out[filter] = input[filter]
